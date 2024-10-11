@@ -53,8 +53,10 @@ if st.button('Predict Students Math Score'):
         # Use the PredictPipeline to make predictions (for math_score)
         prediction = predict_pipeline.predict(input_data)[0]
 
+        predictions = np.clip(prediction, 0, 100)
+
         # Convert prediction to string to handle formatting
-        prediction_str = f"{prediction:.2f}"  # Format to two decimal places
+        prediction_str = f"{predictions:.2f}"  # Format to two decimal places
 
         # Extract first two digits from the integer part and keep two decimal places
         integer_part = int(prediction)  # Get the integer part
