@@ -10,8 +10,10 @@ from dataclasses import dataclass
 from data_transformation import DataTransformation
 from data_transformation import DataTransformationConfig
 
-from model_trainer import ModelTrainer
+from data_transformation import DataTransformation
+from data_transformation import DataTransformationConfig
 
+from model_trainer import ModelTrainer
 
 @dataclass
 class DataIngestionConfig:
@@ -26,11 +28,15 @@ class DataIngestion:
     def initiate_data_ingestion(self):
         logging.info("Entered the data ingestion method or component")
         try:
+            # Define the file path
+            file_path = 'notebook\\data\\final_model_output.csv'
+
             # Check if the file exists
-            if not os.path.exists('notebook/data/final_eda_output.csv'):
-             raise FileNotFoundError("The specified data file does not exist.")
-            
-            df = pd.read_csv(os.path.join('notebook/data/final_eda_output.csv'))
+            if not os.path.exists(file_path):
+                raise FileNotFoundError(f"The specified data file does not exist: {file_path}")
+
+            # Read the CSV file
+            df = pd.read_csv(file_path)
             logging.info('Read the dataset as dataframe')
 
             # Create artifacts directory if it doesn't exist
@@ -56,8 +62,7 @@ class DataIngestion:
             raise CustomException(e, sys)
 
 if __name__ == "__main__":
-    obj = DataIngestion()    
-
+    obj = DataIngestion()
     train_data, test_data = obj.initiate_data_ingestion()
 
     data_transformation = DataTransformation()
@@ -67,6 +72,8 @@ if __name__ == "__main__":
     modeltrainer = ModelTrainer()
     print(modeltrainer.initiate_model_trainer(train_arr, test_arr))
     data_transformation.initiate_data_transformation(train_data, test_data)
+
+   
 
     
 
