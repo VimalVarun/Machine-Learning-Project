@@ -48,8 +48,7 @@ class DataTransformation:
             cat_pipeline = Pipeline(
                 steps=[
                     ("imputer", SimpleImputer(strategy="most_frequent")),
-                    ("one_hot_encoder", OneHotEncoder(handle_unknown='ignore')),
-                    ("scaler", StandardScaler(with_mean=False))
+                    ("one_hot_encoder", OneHotEncoder(handle_unknown='ignore'))
                 ]
             )
 
@@ -95,15 +94,30 @@ class DataTransformation:
             input_feature_test_df = test_df.drop(columns=[target_column_name], axis=1)
             target_feature_test_df = test_df[target_column_name]
 
+            # Log shapes of dataframes to ensure correctness
+            logging.info(f"Shape of input training features: {input_feature_train_df.shape}")
+            logging.info(f"Shape of input test features: {input_feature_test_df.shape}")
+            logging.info(f"Shape of training target: {target_feature_train_df.shape}")
+            logging.info(f"Shape of test target: {target_feature_test_df.shape}")
+
             logging.info("Applying preprocessing object on training and testing dataframes.")
 
             # Apply preprocessing
             input_feature_train_arr = preprocessing_obj.fit_transform(input_feature_train_df)
             input_feature_test_arr = preprocessing_obj.transform(input_feature_test_df)
 
+            # Log transformed feature arrays
+            logging.info(f"Transformed training features (sample): {input_feature_train_arr[:5]}")
+            logging.info(f"Transformed test features (sample): {input_feature_test_arr[:5]}")
+            logging.info(f"Training target (sample): {target_feature_train_df[:5]}")
+
             # Combine features and target variable into a single array
             train_arr = np.c_[input_feature_train_arr, np.array(target_feature_train_df)]
             test_arr = np.c_[input_feature_test_arr, np.array(target_feature_test_df)]
+
+            # Log final shapes of train/test arrays
+            logging.info(f"Final shape of train array: {train_arr.shape}")
+            logging.info(f"Final shape of test array: {test_arr.shape}")
 
             logging.info("Saved preprocessing object.")
             save_object(
