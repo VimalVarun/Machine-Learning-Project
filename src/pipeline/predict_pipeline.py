@@ -1,17 +1,38 @@
 import sys
 import pandas as pd
+import numpy as np
+import joblib
+from sklearn.preprocessing import StandardScaler
 from src.exception import CustomException
-from src.utils import load_object
 import logging
 
 class PredictPipeline:
     def __init__(self):
-        self.model_path = "artifacts/model.pkl"
-        self.preprocessor_path = "artifacts/preprocessor.pkl"
-
-    def predict(self, features):
+        # Paths to model and preprocessor
+        self.model_path = "artifacts/model.pkl"  # Update with the correct path to your model
+        self.preprocessor_path = "artifacts/preprocessor.pkl"  # Update with the correct path to your preprocessor
+    
+    def load_model(self):
+        """Loads the saved machine learning model."""
+        try:
+            model = joblib.load(self.model_path)
+            return model
+        except Exception as e:
+            logging.error(f"Error loading model: {str(e)}")
+            raise CustomException(f"Error loading model: {str(e)}", sys)
+    
+    def load_preprocessor(self):
+        """Loads the saved preprocessor (StandardScaler or any other preprocessing pipeline)."""
+        try:
+            preprocessor = joblib.load(self.preprocessor_path)
+            return preprocessor
+        except Exception as e:
+            logging.error(f"Error loading preprocessor: {str(e)}")
+            raise CustomException(f"Error loading preprocessor: {str(e)}", sys)
+    
+    def predict(self, features: pd.DataFrame):
         """
-        Predict the target variable based on input features.
+        Predict the target variable (math score) based on input features.
 
         Args:
             features (pd.DataFrame): Input features for prediction.
@@ -20,24 +41,20 @@ class PredictPipeline:
             np.ndarray: Predicted values.
         """
         try:
-            # Validate input features
-            if not isinstance(features, pd.DataFrame):
-                raise ValueError("Features should be a pandas DataFrame.")
-            logging.info("Input features validated.")
+            model = self.load_model()  # Load the model
+            preprocessor = self.load_preprocessor()  # Load the preprocessor
 
-            model = load_object(self.model_path)
-            preprocessor = load_object(self.preprocessor_path)
-
-            # Transform features
+            # Transform features using the preprocessor
             data_scaled = preprocessor.transform(features)
-            logging.info("Features transformed using preprocessor.")
 
-            # Make predictions
-            preds = model.predict(data_scaled)
-            logging.info("Predictions made successfully.")
+            # Predict using the model
+            predictions = model.predict(data_scaled)
 
-            return preds
+            # Clip predictions to fall within 0 to 100 range
+            predictions = np.clip(predictions, 0, 100)
 
+            return predictions
+        
         except Exception as e:
             logging.error(f"Prediction failed: {str(e)}")
             raise CustomException(f"Prediction failed: {str(e)}", sys)
